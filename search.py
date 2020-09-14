@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -70,7 +71,8 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -87,17 +89,19 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    start = problem.getStartState()
-    path = []
-
-    if problem.isGoalState(start):
-        return path
 
     frontier = util.Stack()
+    return search_helper_1(problem, frontier)
+    # util.raiseNotDefined() # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
+
+
+def search_helper_1(problem, frontier):
+    start = problem.getStartState()
+
     frontier.push(start)
+    path = []
 
     explored = util.Counter()
-
     parents = {}
 
     while not frontier.isEmpty():
@@ -119,68 +123,33 @@ def depthFirstSearch(problem):
             nextState, action, cost = successor
 
             if explored[nextState] < 1:
+                if isinstance(frontier, util.Queue):
+                    explored[nextState] += 1
                 frontier.push(nextState)
                 parents[nextState] = state, action, cost
 
-    return 0
-    # util.raiseNotDefined() # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
+    return False
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    start = problem.getStartState()
-    path = []
-
-    if problem.isGoalState(start):
-        return path
-
     frontier = util.Queue()
-    frontier.push(start)
-
-    explored = util.Counter()
-    explored[start] += 1
-
-    parents = {}
-
-    while not frontier.isEmpty():
-        state = frontier.pop()
-
-        if problem.isGoalState(state):
-            parentState = state
-
-            while not parentState == start:
-                parentState, parentAction, parentCost = parents[parentState]
-                path.insert(0, parentAction)
-
-            return path
-
-        successors = problem.getSuccessors(state)
-
-        for successor in successors:
-            nextState, action, cost = successor
-
-            if explored[nextState] < 1:
-                explored[nextState] += 1
-                frontier.push(nextState)
-                parents[nextState] = state, action, cost
-
-    return 0
+    return search_helper_1(problem, frontier)
     # util.raiseNotDefined() # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
 
-def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
+
+def search_helper_2(problem, heuristic_flag):
     start = problem.getStartState()
     path = []
 
-    if problem.isGoalState(start):
-        return path
-
     priority = util.Counter()
-    priority[start] = 0
-
     frontier = util.PriorityQueue()
-    frontier.push(start, priority[start])
+
+    if heuristic_flag:
+        frontier.push(start, priority[start] + nullHeuristic(start, problem))
+    else:
+        frontier.push(start, priority[start])
 
     frontierExplored = util.Counter()
     frontierExplored[start] += 1
@@ -192,7 +161,7 @@ def uniformCostSearch(problem):
 
     while not frontier.isEmpty():
         state = frontier.pop()
-        explored[state] += 1
+        explored[start] += 1
 
         if problem.isGoalState(state):
             parentState = state
@@ -211,16 +180,75 @@ def uniformCostSearch(problem):
             nextPriority = priority[state] + cost
 
             if explored[nextState] < 1:
-                frontier.update(nextState, nextPriority)
+                if heuristic_flag:
+                    frontier.update(nextState, nextPriority +
+                                    nullHeuristic(nextState, problem))
+                else:
+                    frontier.update(nextState, nextPriority)
 
                 if nextPriority < priority[nextState] or frontierExplored[nextState] < 1:
                     frontierExplored[nextState] += 1
-
                     priority[nextState] = nextPriority
                     parents[nextState] = state, action, cost
+    return False
 
-    return 0
-    util.raiseNotDefined() # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
+
+def uniformCostSearch(problem):
+    # """Search the node of least total cost first."""
+    # "*** YOUR CODE HERE ***"
+    # start = problem.getStartState()
+    # path = []
+
+    # if problem.isGoalState(start):
+    #     return path
+
+    # priority = util.Counter()
+    # priority[start] = 0
+
+    # frontier = util.PriorityQueue()
+    # frontier.push(start, priority[start])
+
+    # frontierExplored = util.Counter()
+    # frontierExplored[start] += 1
+
+    # explored = util.Counter()
+    # explored[start] += 1
+
+    # parents = {}
+
+    # while not frontier.isEmpty():
+    #     state = frontier.pop()
+    #     explored[state] += 1
+
+    #     if problem.isGoalState(state):
+    #         parentState = state
+
+    #         while not parentState == start:
+    #             parentState, parentAction, parentCost = parents[parentState]
+    #             path.insert(0, parentAction)
+
+    #         return path
+
+    #     successors = problem.getSuccessors(state)
+
+    #     for successor in successors:
+    #         nextState, action, cost = successor
+
+    #         nextPriority = priority[state] + cost
+
+    #         if explored[nextState] < 1:
+    #             frontier.update(nextState, nextPriority)
+
+    #             if nextPriority < priority[nextState] or frontierExplored[nextState] < 1:
+    #                 frontierExplored[nextState] += 1
+
+    #                 priority[nextState] = nextPriority
+    #                 parents[nextState] = state, action, cost
+
+    # return False
+    return search_helper_2(problem, True)
+    # util.raiseNotDefined()  # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -229,60 +257,63 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    start = problem.getStartState()
-    path = []
+    # start = problem.getStartState()
+    # path = []
 
-    if problem.isGoalState(start):
-        return path
+    # if problem.isGoalState(start):
+    #     return path
 
-    priority = util.Counter()
-    priority[start] = 0
+    # priority = util.Counter()
+    # # priority[start] = 0
 
-    frontier = util.PriorityQueue()
-    frontier.push(start, priority[start] + heuristic(start, problem))
+    # frontier = util.PriorityQueue()
+    # frontier.push(start, priority[start] + heuristic(start, problem))
 
-    frontierExplored = util.Counter()
-    frontierExplored[start] += 1
+    # frontierExplored = util.Counter()
+    # frontierExplored[start] += 1
 
-    explored = util.Counter()
-    explored[start] += 1
+    # explored = util.Counter()
+    # explored[start] += 1
 
-    parents = {}
+    # parents = {}
 
-    while not frontier.isEmpty():
-        state = frontier.pop()
-        explored[state] += 1
+    # while not frontier.isEmpty():
+    #     state = frontier.pop()
+    #     explored[state] += 1
 
-        if problem.isGoalState(state):
-            parentState = state
+    #     if problem.isGoalState(state):
+    #         parentState = state
 
-            while not parentState == start:
-                parentState, parentAction, parentCost = parents[parentState]
-                path.insert(0, parentAction)
+    #         while not parentState == start:
+    #             parentState, parentAction, parentCost = parents[parentState]
+    #             path.insert(0, parentAction)
 
-            return path
+    #         return path
 
-        successors = problem.getSuccessors(state)
+    #     successors = problem.getSuccessors(state)
 
-        for successor in successors:
-            nextState, action, cost = successor
+    #     for successor in successors:
+    #         nextState, action, cost = successor
 
-            nextPriority = priority[state] + cost
+    #         nextPriority = priority[state] + cost
 
-            if explored[nextState] < 1:
-                frontier.update(nextState, nextPriority + heuristic(nextState, problem))
+    #         if explored[nextState] < 1:
+    #             frontier.update(nextState, nextPriority +
+    #                             heuristic(nextState, problem))
 
-                if nextPriority < priority[nextState] or frontierExplored[nextState] < 1:
-                    frontierExplored[nextState] += 1
+    #             if nextPriority < priority[nextState] or frontierExplored[nextState] < 1:
+    #                 frontierExplored[nextState] += 1
 
-                    priority[nextState] = nextPriority
-                    parents[nextState] = state, action, cost
+    #                 priority[nextState] = nextPriority
+    #                 parents[nextState] = state, action, cost
 
-    return 0
-    util.raiseNotDefined() # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
+    # return False
+    return search_helper_2(problem, True)
+    # util.raiseNotDefined()  # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
 
 
 # Abbreviations
