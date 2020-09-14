@@ -288,7 +288,6 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
-        self.costFn = lambda x: 1
 
     def getStartState(self):
         """
@@ -298,7 +297,6 @@ class CornersProblem(search.SearchProblem):
         "*** YOUR CODE HERE ***"
         goals = (0, 0, 0, 0)
         return self.startingPosition, goals # Could use bit field here
-        util.raiseNotDefined() # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
 
     def isGoalState(self, state):
         """
@@ -309,7 +307,6 @@ class CornersProblem(search.SearchProblem):
         isGoal = 0 not in goals
 
         return isGoal
-        util.raiseNotDefined() # REMOVE THIS ONCE YOU IMPLEMENTED YOUR CODE
 
     def getSuccessors(self, state):
         """
@@ -323,6 +320,7 @@ class CornersProblem(search.SearchProblem):
         """
 
         successors = []
+        cost = 1
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
@@ -343,7 +341,6 @@ class CornersProblem(search.SearchProblem):
                         nextGoals[i] = 1
                         break
                 nextState = ( (nextx, nexty), tuple(nextGoals) )
-                cost = self.costFn(nextState)
                 successors.append( ( nextState, action, cost ) )
 
         self._expanded += 1 # DO NOT CHANGE
@@ -380,20 +377,6 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    # def permutations(lst):
-    #     allPerms  = [[]]
-
-    #     for x in lst:
-    #         subPerms = []
-
-    #         for perm in allPerms:
-    #             for i in range(len(perm) + 1):
-    #                 subPerms.append(perm[:i] + [x] + perm[i:])
-
-    #         allPerms = subPerms
-
-    #     return allPerms
-
     position, goals = state
     minDistance = None
 
@@ -424,15 +407,6 @@ def cornersHeuristic(state, problem):
         remainingCorners.remove(closestCorner)
 
     return totalDistance
-    # xy1, _ = state
-    # distance = 0
-
-    # for corner in corners:
-    #     xy2 = corner
-    #     distance += abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
-
-    # return distance
-    return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
